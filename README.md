@@ -94,3 +94,9 @@ PM
 ├─ 서비스 기획 : 권종후, 송유선
 └─ PPT 제작 : 조영서, 최어진
 ```
+## 출처 및 외부 라이선스
+
+- 오픈소스: React, TypeScript, Vite, Node.js, Express, better-sqlite3, cors, dotenv (각 MIT/ISC 라이선스)
+- 외부 API: OpenAI API (gpt-4o-mini)
+- 폰트: 시스템 기본 폰트 사용
+- 이미지: 별도 외부 이미지 미사용 
