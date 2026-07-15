@@ -17,7 +17,7 @@ export default function Hub() {
         <div className="card">
           <div className="menu" onClick={() => go('neg')}>
             <div className="mic m1">🌀</div>
-            <div className="mbody"><div className="mt">음의 복리 체험</div><div className="md">지수는 제자리인데 왜 내 돈은 줄어들까?</div></div>
+            <div className="mbody"><div className="mt">음의 복리 시뮬레이터</div><div className="md">지수는 제자리인데 왜 내 돈은 줄어들까?</div></div>
             <div className="arrow">›</div>
           </div>
           <div className="menu" onClick={() => go('quiz')}>

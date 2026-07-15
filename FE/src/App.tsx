@@ -15,7 +15,10 @@ import Order from './screens/Order';
 import WarningSheet from './components/WarningSheet';
 
 export default function App() {
-  const [screen, setScreen] = useState<ScreenId>('list');
+  const [screen, setScreen] = useState<ScreenId>(() => {
+    const requestedScreen = new URLSearchParams(window.location.search).get('screen');
+    return import.meta.env.DEV && requestedScreen === 'game2' ? 'game2' : 'list';
+  });
   const [order, setOrder] = useState({ name: '상품', desc: '' });
   const [warnOpen, setWarnOpen] = useState(false);
   const [warnProduct, setWarnProduct] = useState('KODEX 레버리지');

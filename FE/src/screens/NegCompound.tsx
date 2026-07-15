@@ -56,7 +56,7 @@ export default function NegCompound() {
 
   return (
     <section className="screen active">
-      <div className="topbar"><button className="back" onClick={() => go('home')}>‹</button><div className="title">음의 복리 체험</div></div>
+      <div className="topbar"><button className="back" onClick={() => go('home')}>‹</button><div className="title">음의 복리 시뮬레이터</div></div>
       <div className="scroll">
         <div className="h1">지수는 제자리인데<br />내 돈은 줄어들어요</div>
         <div className="hsub">레버리지 상품은 매일 2배로 다시 계산돼서, 오르락내리락만 반복해도 원금이 깎여요. 이걸 '음의 복리(변동성 손실)'라고 해요.</div>

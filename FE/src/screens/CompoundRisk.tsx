@@ -110,7 +110,7 @@ export default function CompoundRisk() {
 
   return (
     <section className="screen active" id="game3">
-      <div className="topbar"><button className="back" onClick={() => { clear(); go('mentor'); }}>‹</button><div className="title">흔들림 장세 복리 체험</div></div>
+      <div className="topbar"><button className="back" onClick={() => { clear(); go('mentor'); }}>‹</button><div className="title">음의 복리 시뮬레이터</div></div>
       <div className="scroll">
         <div className="cr-progtop">
           <div className="cr-prog"><i style={{ width: `${(day / s.days) * 100}%` }} /></div>

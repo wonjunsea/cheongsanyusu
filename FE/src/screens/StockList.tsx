@@ -4,7 +4,7 @@ export default function StockList() {
   const { go, openOrder, enterMentor } = useApp();
   return (
     <section className="screen active">
-      <div className="topbar"><div style={{ width: 16 }} /><div className="title" style={{ marginLeft: 8 }}>투자</div></div>
+      <div className="topbar"><div style={{ width: 16 }} /><div className="title brand-title">청산유수</div></div>
       <div className="scroll">
         <div className="h1">오늘의 인기 종목</div>
         <div className="hsub">거래량이 급증한 상품이에요</div>
