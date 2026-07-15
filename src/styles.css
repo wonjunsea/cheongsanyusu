@@ -204,6 +204,36 @@ input[type=range]{width:100%;accent-color:var(--blue);height:24px;}
 .res-c{flex:1;background:#141926;border-radius:14px;padding:14px 8px;text-align:center;}
 .rc-l{font-size:11px;font-weight:700;color:#8B95A1;} .rc-v{font-size:22px;font-weight:900;margin-top:6px;letter-spacing:-.5px;} .rc-t{font-size:10.5px;color:#6B7480;margin-top:4px;}
 
+/* ===== 급등주 호가창 게임 (game2) ===== */
+.ob-wrap{padding:14px 14px 22px;}
+.ob-news{background:#2a1416;color:#F0656F;font-size:12px;font-weight:700;padding:9px 12px;border-radius:10px;margin-bottom:12px;text-align:center;}
+.ob-chartbox{background:#141926;border-radius:14px;padding:10px 8px;margin-bottom:12px;}
+.ob-chart-t{font-size:12px;color:#8B95A1;font-weight:700;margin:2px 4px 6px;}
+.ob-chartwrap{height:150px;}
+.ob-chartwrap canvas{width:100%;height:100%;display:block;}
+.ob-stats{display:flex;background:#141926;border-radius:12px;overflow:hidden;margin-bottom:12px;}
+.ob-stats div{flex:1;padding:11px 6px;text-align:center;} .ob-stats div+div{border-left:1px solid #232a38;}
+.ob-stats .l{font-size:11px;color:#8B95A1;font-weight:700;} .ob-stats .v{font-size:15px;font-weight:800;color:#fff;margin-top:3px;}
+.ob-book{background:#141926;border-radius:12px;overflow:hidden;margin-bottom:12px;}
+.ob-row{display:flex;justify-content:space-between;padding:8px 16px;font-size:13px;font-weight:700;}
+.ob-head{color:#8B95A1;font-size:11px;background:#1a2030;}
+.ob-ask span:first-child{color:#5B9BF7;} .ob-ask span:last-child{color:#fff;}
+.ob-bid span:first-child{color:#F0656F;} .ob-bid span:last-child{color:#fff;}
+.ob-bid.empty{opacity:.3;}
+.ob-spread{color:#6B7480;font-size:11px;background:#10151f;}
+.ob-order{background:#141926;border-radius:14px;padding:14px;}
+.ob-order-t{font-size:13px;color:#8B95A1;font-weight:700;margin-bottom:10px;}
+.ob-tabs{display:flex;gap:8px;margin-bottom:12px;}
+.ob-tabs button{flex:1;border:1.5px solid #232a38;background:none;color:#6B7480;border-radius:10px;padding:9px;font-size:13px;font-weight:700;font-family:inherit;}
+.ob-tabs button.on{border-color:#F04452;color:#F04452;}
+.ob-qty{font-size:13px;color:#8B95A1;margin-bottom:12px;} .ob-qty b{color:#fff;}
+.ob-sell{width:100%;border:none;background:#F04452;color:#fff;border-radius:14px;padding:16px;font-size:16px;font-weight:900;cursor:pointer;font-family:inherit;}
+.ob-sell:active{transform:scale(.98);}
+.ob-fill{display:flex;margin-top:12px;}
+.ob-fill div{flex:1;text-align:center;}
+.ob-fill .l{font-size:11px;color:#8B95A1;font-weight:700;} .ob-fill .v{font-size:14px;font-weight:800;color:#fff;margin-top:3px;}
+.ob-result{padding:10px 4px;}
+
 /* ===== 흔들림 장세 복리 체험 (game3) ===== */
 .cr-progtop{display:flex;align-items:center;gap:10px;margin:4px 2px 16px;}
 .cr-prog{flex:1;height:6px;background:var(--line);border-radius:3px;overflow:hidden;}

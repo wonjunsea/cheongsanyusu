@@ -2,180 +2,199 @@ import { useEffect, useRef, useState } from 'react';
 import { useApp } from '../app/AppContext';
 
 const fmt = (n: number) => Math.round(n).toLocaleString('ko-KR');
-const FOMO_UP = ['🚀 지금 안 사면 늦어요!', '🔥 가즈아!!', '📈 이건 무조건 간다', '💎 존버는 승리', '🤑 아직 안 늦었다', '👀 다들 사는 중'];
-const FOMO_DN = ['😨 어? 왜 빠지지', '📉 손절 각인가', '😱 지금 팔아야 하나', '💦 나만 물린 건가', '🩸 폭락이다...'];
 
+interface Candle { o: number; h: number; l: number; c: number; crash?: boolean; }
+interface Bid { price: number; qty: number; }
 interface G {
-  price: number; start: number; cash: number; qty: number; avg: number;
-  t: number; hist: number[]; phase: 'rise' | 'crash'; crashAt: number; peak: number; ended: boolean;
-}
-interface Snap {
-  price: number; chg: number; heat: number; cash: number; qty: number; pnl: number; hist: number[]; fomo: string; panic: boolean;
-}
-interface Result {
-  total: number; pnl: number; peakDd: number; badge: string; badgeColor: string; title: string; lesson: string;
+  price: number; holdings: number; avg: number;
+  bids: Bid[]; candles: Candle[];
+  attempts: number; filledQty: number; filledValue: number; ended: boolean;
 }
 
-function snapshot(g: G, fomo: string, panic: boolean): Snap {
-  const chg = (g.price / g.start - 1) * 100;
-  const heat = Math.max(0, Math.min(100, ((g.price / g.start - 1) / 1.2) * 100));
-  return { price: g.price, chg, heat, cash: g.cash, qty: g.qty, pnl: (g.price - g.avg) * g.qty, hist: [...g.hist], fomo, panic };
+// 급등(18,200 → 29,480) 후 악재로 24,100까지 하락한 캔들 히스토리(초봉 느낌)
+function seedCandles(): Candle[] {
+  const pts = [18200, 19800, 21500, 23200, 25400, 27600, 29480, 28900, 27200, 25600, 24100];
+  const cs: Candle[] = [];
+  for (let i = 1; i < pts.length; i++) {
+    const o = pts[i - 1], c = pts[i];
+    cs.push({ o, h: Math.max(o, c) * 1.008, l: Math.min(o, c) * 0.992, c });
+  }
+  return cs;
 }
+// 매수호가(bids): 잔량이 얇음 — 100주 던지면 여러 호가를 잡아먹으며 급락
+const INIT_BIDS: Bid[] = [
+  { price: 24050, qty: 15 }, { price: 23800, qty: 20 }, { price: 23400, qty: 16 },
+  { price: 22900, qty: 18 }, { price: 22300, qty: 14 }, { price: 21400, qty: 22 }, { price: 20200, qty: 15 },
+];
+// 매도호가(asks): 표시용 고정
+const ASKS: Bid[] = [
+  { price: 24100, qty: 640 }, { price: 24150, qty: 2100 }, { price: 24250, qty: 890 },
+  { price: 24400, qty: 1800 }, { price: 24550, qty: 3200 },
+];
 
 export default function SurgeGame() {
-  const { go, toast } = useApp();
+  const { go, toast, nextCase, hasNextCase } = useApp();
   const [phase, setPhase] = useState<'intro' | 'play' | 'result'>('intro');
-  const [snap, setSnap] = useState<Snap | null>(null);
-  const [result, setResult] = useState<Result | null>(null);
   const gRef = useRef<G | null>(null);
-  const timerRef = useRef<number | undefined>(undefined);
+  const [, setTick] = useState(0);
+  const rerender = () => setTick((x) => x + 1);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const timerRef = useRef<number | undefined>(undefined);
 
   const clear = () => { if (timerRef.current) window.clearInterval(timerRef.current); timerRef.current = undefined; };
   useEffect(() => () => clear(), []);
 
+  const pushCandle = (g: G, o: number, c: number, crash = false) => {
+    const h = Math.max(o, c) * (1 + Math.random() * 0.004);
+    const l = Math.min(o, c) * (1 - Math.random() * 0.004);
+    g.candles.push({ o, h, l, c, crash });
+    if (g.candles.length > 26) g.candles.shift();
+  };
+
   const start = () => {
-    const g: G = { price: 10000, start: 10000, cash: 1000000, qty: 0, avg: 0, t: 0, hist: [10000], phase: 'rise', crashAt: 8 + Math.floor(Math.random() * 8), peak: 10000, ended: false };
-    gRef.current = g;
-    setResult(null);
+    gRef.current = {
+      price: 24100, holdings: 100, avg: 18200,
+      bids: INIT_BIDS.map((b) => ({ ...b })), candles: seedCandles(),
+      attempts: 0, filledQty: 0, filledValue: 0, ended: false,
+    };
     setPhase('play');
-    setSnap(snapshot(g, '🚀 지금이 기회!', false));
+    rerender();
     clear();
-    timerRef.current = window.setInterval(tick, 650);
+    timerRef.current = window.setInterval(() => {
+      const g = gRef.current; if (!g || g.ended) return;
+      const prev = g.candles[g.candles.length - 1].c;
+      const c = prev * (1 + (Math.random() * 0.006 - 0.004)); // 악재로 살짝 하락 편향
+      pushCandle(g, prev, c);
+      g.price = c;
+      rerender();
+    }, 1200);
   };
 
-  const tick = () => {
-    const g = gRef.current;
-    if (!g || g.ended) { clear(); return; }
-    g.t++;
-    let r = 0;
-    if (g.phase === 'rise') { r = 0.03 + Math.random() * 0.07; if (g.t >= g.crashAt) g.phase = 'crash'; }
-    if (g.phase === 'crash') { r = -(0.08 + Math.random() * 0.14); }
-    g.price = Math.max(300, g.price * (1 + r));
-    if (g.price > g.peak) g.peak = g.price;
-    g.hist.push(g.price); if (g.hist.length > 40) g.hist.shift();
-    const rising = g.phase === 'rise';
-    const fomo = (rising ? FOMO_UP : FOMO_DN)[Math.floor(Math.random() * (rising ? FOMO_UP.length : FOMO_DN.length))];
-    setSnap(snapshot(g, fomo, !rising));
-    if (g.phase === 'crash' && g.t >= g.crashAt + 6) endGame();
-  };
-
-  const buy = () => {
-    const g = gRef.current; if (!g || g.ended) return;
-    if (g.cash < g.price) { toast('현금이 부족해요'); return; }
-    const q = Math.floor(g.cash / g.price);
-    g.avg = (g.avg * g.qty + g.price * q) / (g.qty + q); g.qty += q; g.cash -= g.price * q;
-    toast(`${q.toLocaleString('ko-KR')}주 매수`);
-    setSnap(snapshot(g, snap?.fomo ?? '', snap?.panic ?? false));
-  };
   const sell = () => {
     const g = gRef.current; if (!g || g.ended) return;
-    if (g.qty <= 0) { toast('보유 수량이 없어요'); return; }
-    g.cash += g.qty * g.price; toast(`${g.qty.toLocaleString('ko-KR')}주 매도`); g.qty = 0; g.avg = 0;
-    setSnap(snapshot(g, snap?.fomo ?? '', snap?.panic ?? false));
+    if (g.holdings <= 0) { toast('보유 수량이 없어요'); return; }
+    const before = g.price;
+    let remaining = g.holdings;
+    let lastPrice = g.price;
+    for (const b of g.bids) {
+      if (remaining <= 0) break;
+      if (b.qty <= 0) continue;
+      const take = Math.min(remaining, b.qty);
+      b.qty -= take; remaining -= take;
+      g.filledQty += take; g.filledValue += take * b.price;
+      lastPrice = b.price;
+    }
+    g.holdings = remaining;
+    g.price = lastPrice;
+    g.attempts++;
+    pushCandle(g, before, lastPrice, true); // 급락 캔들 (한 캔들이 크게 내려감)
+    rerender();
+    if (g.holdings <= 0 || g.bids.every((b) => b.qty <= 0)) endGame();
   };
 
   const endGame = () => {
     const g = gRef.current; if (!g) return;
     g.ended = true; clear();
-    const total = g.cash + g.qty * g.price;
-    const pnl = total - 1000000;
-    const peakDd = (g.price / g.peak - 1) * 100;
-    let badge = '', badgeColor = '', title = '', lesson = '';
-    if (g.qty > 0) {
-      badge = '🩸 물렸어요'; badgeColor = '#F04452'; title = '못 팔고 물렸어요';
-      lesson = `급락이 시작되면 팔 기회를 놓치기 쉬워요. 고점 대비 ${peakDd.toFixed(0)}%까지 빠졌어요. 급등주는 언제 꺼질지 아무도 모릅니다.`;
-    } else if (pnl > 0) {
-      badge = '🎉 수익 실현'; badgeColor = '#12B886'; title = '운 좋게 빠져나왔네요';
-      lesson = '이번엔 타이밍이 맞았지만 순전히 운이에요. 매번 급락 직전에 팔 수는 없어요. 대부분은 고점에 사서 물립니다.';
-    } else {
-      badge = '📉 손실'; badgeColor = '#F04452'; title = '결국 손해였어요';
-      lesson = '급등주 추격 매수는 손실로 끝나기 쉬워요. 싸게 사서 비싸게 판다는 건, 급등주에서는 거의 불가능합니다.';
-    }
-    setResult({ total, pnl, peakDd, badge, badgeColor, title, lesson });
-    setPhase('result');
+    setPhase('result'); rerender();
   };
 
-  // 차트 그리기
+  // 캔들차트 그리기
   useEffect(() => {
-    const cv = canvasRef.current;
-    if (!cv || !snap) return;
+    const g = gRef.current; const cv = canvasRef.current;
+    if (!g || !cv) return;
     const ctx = cv.getContext('2d'); if (!ctx) return;
     const w = cv.clientWidth, h = cv.clientHeight, dpr = window.devicePixelRatio || 1;
     if (!w || !h) return;
     cv.width = w * dpr; cv.height = h * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, w, h);
-    const a = snap.hist;
-    let min = Math.min(...a), max = Math.max(...a);
-    const pad = 8, gap = max - min || 1; min -= gap * 0.1; max += gap * 0.12;
-    const X = (i: number) => pad + (i * (w - 2 * pad)) / Math.max(a.length - 1, 1);
-    const Y = (v: number) => h - pad - ((v - min) / (max - min)) * (h - 2 * pad);
-    const rising = !snap.panic;
-    const col = rising ? '#F04452' : '#3182F6';
-    const grad = ctx.createLinearGradient(0, 0, 0, h);
-    grad.addColorStop(0, rising ? 'rgba(240,68,82,.25)' : 'rgba(49,130,246,.25)');
-    grad.addColorStop(1, 'rgba(11,14,20,0)');
-    ctx.beginPath(); a.forEach((v, i) => (i ? ctx.lineTo(X(i), Y(v)) : ctx.moveTo(X(i), Y(v))));
-    ctx.lineTo(X(a.length - 1), h - pad); ctx.lineTo(X(0), h - pad); ctx.closePath(); ctx.fillStyle = grad; ctx.fill();
-    ctx.beginPath(); a.forEach((v, i) => (i ? ctx.lineTo(X(i), Y(v)) : ctx.moveTo(X(i), Y(v))));
-    ctx.strokeStyle = col; ctx.lineWidth = 2.6; ctx.lineJoin = 'round'; ctx.stroke();
-    ctx.fillStyle = col; ctx.beginPath(); ctx.arc(X(a.length - 1), Y(a[a.length - 1]), 4, 0, 7); ctx.fill();
-  }, [snap]);
+    const cs = g.candles;
+    const hi = Math.max(...cs.map((k) => k.h)), lo = Math.min(...cs.map((k) => k.l));
+    const pad = 10, range = hi - lo || 1;
+    const Y = (v: number) => pad + (1 - (v - lo) / range) * (h - 2 * pad);
+    const n = cs.length, cw = (w - 2 * pad) / n, bw = Math.min(cw * 0.6, 12);
+    cs.forEach((k, i) => {
+      const x = pad + i * cw + cw / 2;
+      const up = k.c >= k.o;
+      const col = k.crash ? '#F04452' : up ? '#F04452' : '#3182F6';
+      ctx.strokeStyle = col; ctx.fillStyle = col; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(x, Y(k.h)); ctx.lineTo(x, Y(k.l)); ctx.stroke();
+      const yo = Y(k.o), yc = Y(k.c);
+      const top = Math.min(yo, yc), bh = Math.max(Math.abs(yc - yo), 1.5);
+      ctx.fillRect(x - bw / 2, top, bw, bh);
+    });
+  });
 
-  const heatTxt = snap ? (snap.heat > 75 ? '⚠ 과열' : snap.heat > 40 ? '상승' : '보통') : '보통';
+  const g = gRef.current;
+  const pnl = g ? ((g.price - g.avg) / g.avg) * 100 : 0;
+  const avgFill = g && g.filledQty ? g.filledValue / g.filledQty : 0;
 
   return (
     <section className="screen active" id="game2">
-      <div className="topbar"><button className="back" onClick={() => { clear(); go('mentor'); }}>‹</button><div className="title">급등주 타이밍</div></div>
-      <div className="gamewrap">
-        {phase !== 'intro' && snap && (
-          <>
-            <div className="g2-top">
-              <div className="g2-price">{fmt(snap.price)}원</div>
-              <div className="g2-chg" style={{ color: snap.chg >= 0 ? '#F04452' : '#3182F6' }}>{(snap.chg >= 0 ? '+' : '') + snap.chg.toFixed(1)}%</div>
-              <div className="g2-heat"><div className="g2-heat-bar" style={{ width: `${snap.heat}%` }} /></div>
-              <div className="g2-heat-l"><span>과열도</span><span>{heatTxt}</span></div>
-            </div>
-            <div className="g2-chartwrap"><canvas ref={canvasRef} /></div>
-          </>
-        )}
-
-        {phase === 'play' && snap && (
-          <>
-            <div className={'g2-fomo' + (snap.panic ? ' panic' : '')}>{snap.fomo}</div>
-            <div className="g2-stat">
-              <div><div className="l">현금</div><div className="v">{fmt(snap.cash)}</div></div>
-              <div><div className="l">보유</div><div className="v">{snap.qty}주</div></div>
-              <div><div className="l">평가손익</div><div className="v" style={{ color: snap.pnl > 0 ? '#F04452' : snap.pnl < 0 ? '#3182F6' : '#fff' }}>{(snap.pnl > 0 ? '+' : '') + fmt(snap.pnl)}</div></div>
-            </div>
-            <div className="g2-trade">
-              <button className="g2-buy" onClick={buy}>매수 (전액)</button>
-              <button className="g2-sell" onClick={sell}>매도 (전량)</button>
-            </div>
-          </>
-        )}
-
+      <div className="topbar"><button className="back" onClick={() => { clear(); go('mentor'); }}>‹</button><div className="title">호가창 탈출</div></div>
+      <div className="gamewrap" style={{ overflowY: 'auto' }}>
         {phase === 'intro' && (
           <div className="g-overlay">
-            <div className="g-badge">급등주 타이밍 게임</div>
-            <h2 className="g-title">급등하는 종목,<br />언제 사고 팔래요?</h2>
-            <p className="g-desc">가격이 빠르게 <b>급등</b>하다가 <b>어느 순간 급락</b>해요. 언제 급락할지는 아무도 몰라요. <b>매수</b>로 올라타고 <b>매도</b>로 팔아서 수익을 내보세요. 초기 자금 100만원.</p>
-            <button className="btn btn-primary" onClick={start}>매매 시작</button>
+            <div className="g-badge">급등주 유동성 위험 체험</div>
+            <h2 className="g-title">지금 팔면<br />될 것 같나요?</h2>
+            <p className="g-desc">급등주는 팔고 싶을 때 <b>항상 팔 수 있는 게 아니에요.</b> ㈜모바일히어로 100주(+62%)를 들고 있는데 악재가 터졌어요. 시장가로 팔아보고 무슨 일이 벌어지는지 직접 겪어보세요.</p>
+            <button className="btn btn-primary" onClick={start}>게임 시작 →</button>
           </div>
         )}
 
-        {phase === 'result' && result && (
-          <div className="g-overlay res">
-            <div className="g-badge" style={{ color: result.badgeColor }}>{result.badge}</div>
-            <h2 className="g-title">{result.title}</h2>
-            <div className="res-cards">
-              <div className="res-c"><div className="rc-l">최종 자산</div><div className="rc-v">{fmt(result.total)}</div><div className="rc-t">현금+평가</div></div>
-              <div className="res-c"><div className="rc-l">손익</div><div className="rc-v" style={{ color: result.pnl >= 0 ? '#12B886' : '#F04452' }}>{(result.pnl >= 0 ? '+' : '') + fmt(result.pnl)}</div><div className="rc-t">원금 대비</div></div>
-              <div className="res-c"><div className="rc-l">고점 대비</div><div className="rc-v">{result.peakDd.toFixed(0)}%</div><div className="rc-t">현재가</div></div>
+        {(phase === 'play' || phase === 'result') && g && (
+          <div className="ob-wrap">
+            <div className="ob-news">🚨 감사원 회계 의혹 · 기관 매도 · 개인 패닉 매도</div>
+
+            <div className="ob-chartbox">
+              <div className="ob-chart-t">모바일히어로 초봉 차트</div>
+              <div className="ob-chartwrap"><canvas ref={canvasRef} /></div>
             </div>
-            <p className="g-desc">{result.lesson}</p>
-            <button className="btn btn-primary" onClick={start}>다시 매매</button>
-            <button className="btn btn-ghost" onClick={() => go('list')}>주식앱으로 돌아가기</button>
+
+            <div className="ob-stats">
+              <div><div className="l">매수가</div><div className="v">{fmt(g.avg)}</div></div>
+              <div><div className="l">현재가</div><div className="v" style={{ color: '#F04452' }}>{fmt(g.price)}</div></div>
+              <div><div className="l">평가손익</div><div className="v" style={{ color: pnl >= 0 ? '#12B886' : '#3182F6' }}>{(pnl >= 0 ? '+' : '') + pnl.toFixed(1)}%</div></div>
+            </div>
+
+            <div className="ob-book">
+              <div className="ob-row ob-head"><span>잔량</span><span>호가</span></div>
+              {ASKS.map((a, i) => (
+                <div key={'a' + i} className="ob-row ob-ask"><span>{fmt(a.qty)}</span><span>{fmt(a.price)}</span></div>
+              ))}
+              <div className="ob-row ob-spread"><span>스프레드</span><span>{fmt(ASKS[0].price - g.bids[0].price)}원</span></div>
+              {g.bids.map((b, i) => (
+                <div key={'b' + i} className={'ob-row ob-bid' + (b.qty <= 0 ? ' empty' : '')}><span>{fmt(b.price)}</span><span>{b.qty <= 0 ? '—' : fmt(b.qty)}</span></div>
+              ))}
+            </div>
+
+            {phase === 'play' && (
+              <div className="ob-order">
+                <div className="ob-order-t">매도 주문</div>
+                <div className="ob-tabs"><button className="on">시장가</button><button disabled>지정가</button><button disabled>최유리</button></div>
+                <div className="ob-qty">수량 <b>{g.holdings}주 (전량)</b></div>
+                <button className="ob-sell" onClick={sell}>⚡ 시장가 매도 실행</button>
+                <div className="ob-fill">
+                  <div><div className="l">시도</div><div className="v">{g.attempts}회</div></div>
+                  <div><div className="l">체결</div><div className="v" style={{ color: '#12B886' }}>{g.filledQty}주</div></div>
+                  <div><div className="l">미체결</div><div className="v">{g.holdings}주</div></div>
+                </div>
+              </div>
+            )}
+
+            {phase === 'result' && (
+              <div className="ob-result">
+                <div className="g-badge" style={{ color: '#F04452' }}>💥 유동성 함정</div>
+                <h2 className="g-title" style={{ fontSize: 22 }}>팔긴 팔았는데…</h2>
+                <div className="res-cards">
+                  <div className="res-c"><div className="rc-l">평균 체결가</div><div className="rc-v" style={{ color: '#F04452' }}>{fmt(avgFill)}</div><div className="rc-t">호가창 급락</div></div>
+                  <div className="res-c"><div className="rc-l">기대(시작가)</div><div className="rc-v">24,100</div><div className="rc-t">팔릴 줄 알았던 값</div></div>
+                  <div className="res-c"><div className="rc-l">유동성 손실</div><div className="rc-v" style={{ color: '#F04452' }}>{fmt((24100 - avgFill) * g.filledQty)}</div><div className="rc-t">원</div></div>
+                </div>
+                <p className="g-desc">시장가로 던지는 순간 얇은 매수 호가를 다 잡아먹으며 <b>가격이 급락</b>했어요. 급등주는 "지금 팔면 되겠지"가 안 통해요 — <b>팔 사람이 없으면 원하는 값에 못 팝니다.</b></p>
+                <button className="btn btn-primary" onClick={nextCase}>{hasNextCase ? '다음 체험 →' : '완료'}</button>
+                <button className="btn btn-ghost" onClick={start}>다시 해보기</button>
+              </div>
+            )}
           </div>
         )}
       </div>

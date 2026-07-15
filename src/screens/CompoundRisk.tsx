@@ -17,7 +17,7 @@ function makeSeries(vol: number) {
 }
 
 export default function CompoundRisk() {
-  const { go } = useApp();
+  const { go, nextCase, hasNextCase } = useApp();
   const [vol, setVol] = useState(3);
   const [phase, setPhase] = useState<'ready' | 'running' | 'done'>('ready');
   const [day, setDay] = useState(0);
@@ -122,12 +122,14 @@ export default function CompoundRisk() {
         )}
       </div>
       <div className="cta">
-        {phase === 'running' ? (
-          <button className="btn btn-primary" disabled>● 천천히 보여드리는 중</button>
-        ) : (
-          <button className="btn btn-primary" onClick={start}>{phase === 'done' ? '다시 체험하기' : '▶ 체험 시작하기'}</button>
+        {phase === 'running' && <button className="btn btn-primary" disabled>● 천천히 보여드리는 중</button>}
+        {phase === 'ready' && <button className="btn btn-primary" onClick={start}>▶ 체험 시작하기</button>}
+        {phase === 'done' && (
+          <>
+            <button className="btn btn-primary" onClick={nextCase}>{hasNextCase ? '다음 체험 →' : '완료'}</button>
+            <button className="btn btn-ghost" onClick={start}>다시 체험하기</button>
+          </>
         )}
-        {phase === 'done' && <button className="btn btn-ghost" onClick={() => go('list')}>주식앱으로 돌아가기</button>}
       </div>
     </section>
   );
