@@ -233,12 +233,23 @@ input[type=range]{width:100%;accent-color:var(--blue);height:24px;}
 .ob-fill div{flex:1;text-align:center;}
 .ob-fill .l{font-size:11px;color:#8B95A1;font-weight:700;} .ob-fill .v{font-size:14px;font-weight:800;color:#fff;margin-top:3px;}
 .ob-result{padding:10px 4px;}
+.ob-summary{background:#2a1416;border:1px solid #5a2a2e;border-radius:12px;padding:14px 16px;font-size:13px;line-height:1.7;color:#F0656F;margin-bottom:12px;}
+.ob-summary b{color:#fff;}
+.ob-lesson{background:#14233a;border:1px solid #21344d;border-radius:12px;padding:14px 16px;margin:14px 0 4px;}
+.ob-lesson-t{font-size:13px;font-weight:800;color:#5B9BF7;margin-bottom:8px;}
+.ob-lesson p{font-size:13px;line-height:1.6;color:#c3ccd6;margin:0 0 6px;}
+.ob-lesson p:last-child{margin-bottom:0;}
+.ob-lesson b{color:#fff;}
 
 /* ===== 흔들림 장세 복리 체험 (game3) ===== */
 .cr-progtop{display:flex;align-items:center;gap:10px;margin:4px 2px 16px;}
 .cr-prog{flex:1;height:6px;background:var(--line);border-radius:3px;overflow:hidden;}
 .cr-prog i{display:block;height:100%;background:var(--blue);border-radius:3px;transition:width .2s;}
 .cr-progn{font-size:12px;font-weight:800;color:var(--sub2);white-space:nowrap;}
+.cr-toggle{display:flex;background:var(--bg);border-radius:12px;padding:4px;margin:2px 2px 16px;}
+.cr-toggle button{flex:1;border:none;background:none;border-radius:9px;padding:11px;font-size:14px;font-weight:800;color:var(--sub2);cursor:pointer;font-family:inherit;transition:.15s;}
+.cr-toggle button.on{background:var(--blue);color:#fff;}
+.cr-toggle button:disabled{opacity:.6;cursor:default;}
 .cr-h1{font-size:22px;font-weight:800;line-height:1.35;letter-spacing:-.5px;margin:0 2px 8px;}
 .cr-sub{font-size:13px;color:var(--sub2);line-height:1.5;margin:0 2px 18px;}
 .cr-slider{margin:0 2px 16px;}

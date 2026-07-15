@@ -1,6 +1,6 @@
 import { useCallback, useRef, useState } from 'react';
 import { AppContext, type AppApi, type ScreenId } from './app/AppContext';
-import { CASE_ORDER } from './lib/mentor';
+import { CASE_ORDER, type CaseType } from './lib/mentor';
 import StockList from './screens/StockList';
 import Hub from './screens/Hub';
 import NegCompound from './screens/NegCompound';
@@ -18,9 +18,7 @@ export default function App() {
   const [order, setOrder] = useState({ name: '상품', desc: '' });
   const [warnOpen, setWarnOpen] = useState(false);
   const [warnProduct, setWarnProduct] = useState('KODEX 레버리지');
-  const [caseIndex, setCaseIndex] = useState(0); // 0=급등주, 1=음의복리, 2=ETF
-  const caseIndexRef = useRef(0);
-  const setCase = useCallback((i: number) => { caseIndexRef.current = i; setCaseIndex(i); }, []);
+  const [caseType, setCaseType] = useState<CaseType>('surge');
   const [toastMsg, setToastMsg] = useState('');
   const toastTimer = useRef<number | undefined>(undefined);
 
@@ -37,19 +35,12 @@ export default function App() {
     setScreen('order');
   }, []);
 
-  // 고위험 종목 클릭 -> 첫 케이스(급등주)부터 순서대로
+  // 고위험 종목 클릭 -> 랜덤 케이스 1개 (클릭당 체험 한 번)
   const enterMentor = useCallback((product: string) => {
     setWarnProduct(product);
-    setCase(0);
+    setCaseType(CASE_ORDER[Math.floor(Math.random() * CASE_ORDER.length)]);
     setScreen('mentor');
-  }, [setCase]);
-
-  // 다음 케이스로 진행 (마지막이면 주식앱으로)
-  const nextCase = useCallback(() => {
-    const next = caseIndexRef.current + 1;
-    if (next >= CASE_ORDER.length) { setCase(0); setScreen('list'); }
-    else { setCase(next); setScreen('mentor'); }
-  }, [setCase]);
+  }, []);
 
   const openWarning = useCallback((product: string) => {
     setWarnProduct(product);
@@ -58,11 +49,7 @@ export default function App() {
   const closeWarning = useCallback(() => setWarnOpen(false), []);
 
   const api: AppApi = {
-    screen, go, toast,
-    caseType: CASE_ORDER[caseIndex],
-    hasNextCase: caseIndex < CASE_ORDER.length - 1,
-    nextCase,
-    enterMentor, openOrder, openWarning, closeWarning, order,
+    screen, go, toast, caseType, enterMentor, openOrder, openWarning, closeWarning, order,
   };
 
   return (
