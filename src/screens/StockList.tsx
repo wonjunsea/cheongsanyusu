@@ -33,17 +33,17 @@ export default function StockList() {
 
         <div className="sec-label">레버리지 · 인버스 · 급등주</div>
         <div className="card">
-          <div className="row" onClick={() => enterMentor('KODEX 레버리지')}>
+          <div className="row" onClick={() => enterMentor('KODEX 레버리지', 'compound')}>
             <div className="ic lev">2X</div>
             <div className="rbody"><div className="nm">KODEX 레버리지</div><div className="rmeta"><span className="tag-risk">⚠ 고위험</span> 지수 2배 추종</div></div>
             <div className="price"><div className="p">17,830</div><div className="c up">+3.1%</div></div>
           </div>
-          <div className="row" onClick={() => enterMentor('KODEX 200선물인버스2X')}>
+          <div className="row" onClick={() => enterMentor('KODEX 200선물인버스2X', 'etf')}>
             <div className="ic inv">-2X</div>
             <div className="rbody"><div className="nm">200선물인버스2X</div><div className="rmeta"><span className="tag-risk">⚠ 고위험</span> 하락 2배 추종</div></div>
             <div className="price"><div className="p">2,145</div><div className="c down">-2.9%</div></div>
           </div>
-          <div className="row" onClick={() => enterMentor('에코비트')}>
+          <div className="row" onClick={() => enterMentor('에코비트', 'surge')}>
             <div className="ic surge">🚀</div>
             <div className="rbody"><div className="nm">에코비트</div><div className="rmeta"><span className="tag-risk">⚠ 고위험</span> 최근 5일 +142% 급등주</div></div>
             <div className="price"><div className="p">48,600</div><div className="c up">+29.8%</div></div>

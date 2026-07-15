@@ -240,6 +240,11 @@ input[type=range]{width:100%;accent-color:var(--blue);height:24px;}
 .ob-lesson p{font-size:13px;line-height:1.6;color:#c3ccd6;margin:0 0 6px;}
 .ob-lesson p:last-child{margin-bottom:0;}
 .ob-lesson b{color:#fff;}
+.ob-hint{font-size:12px;color:#8B95A1;text-align:center;margin-top:12px;line-height:1.5;}
+.ob-loss{background:#2a1416;border:1px solid #5a2a2e;border-radius:14px;padding:16px;text-align:center;margin-bottom:12px;}
+.ob-loss-l{font-size:12px;color:#F0656F;font-weight:700;}
+.ob-loss-v{font-size:30px;font-weight:900;color:#F04452;letter-spacing:-1px;margin:6px 0 8px;}
+.ob-loss-sub{font-size:12px;color:#c3ccd6;line-height:1.6;}
 
 /* ===== 흔들림 장세 복리 체험 (game3) ===== */
 .cr-progtop{display:flex;align-items:center;gap:10px;margin:4px 2px 16px;}

@@ -24,10 +24,10 @@ export interface AppApi {
   screen: ScreenId;
   go: (s: ScreenId) => void;
   toast: (msg: string) => void;
-  /** 이번 클릭에서 뽑힌 랜덤 케이스 */
+  /** 이번에 진행 중인 케이스 (종목별 고정 매핑) */
   caseType: CaseType;
-  /** 고위험 종목 클릭 시: 랜덤 케이스 1개로 멘토 진입 */
-  enterMentor: (product: string) => void;
+  /** 고위험 종목 클릭 시: 해당 종목의 케이스로 멘토 진입 */
+  enterMentor: (product: string, caseType: CaseType) => void;
   /** 일반 상품 클릭 시: 주문 화면 */
   openOrder: (name: string, desc: string) => void;
   openWarning: (product: string) => void;

@@ -1,6 +1,6 @@
 import { useCallback, useRef, useState } from 'react';
 import { AppContext, type AppApi, type ScreenId } from './app/AppContext';
-import { CASE_ORDER, type CaseType } from './lib/mentor';
+import type { CaseType } from './lib/mentor';
 import StockList from './screens/StockList';
 import Hub from './screens/Hub';
 import NegCompound from './screens/NegCompound';
@@ -35,10 +35,10 @@ export default function App() {
     setScreen('order');
   }, []);
 
-  // 고위험 종목 클릭 -> 랜덤 케이스 1개 (클릭당 체험 한 번)
-  const enterMentor = useCallback((product: string) => {
+  // 고위험 종목 클릭 -> 종목별 고정 케이스 (클릭당 체험 한 번)
+  const enterMentor = useCallback((product: string, ct: CaseType) => {
     setWarnProduct(product);
-    setCaseType(CASE_ORDER[Math.floor(Math.random() * CASE_ORDER.length)]);
+    setCaseType(ct);
     setScreen('mentor');
   }, []);
 
