@@ -6,6 +6,7 @@ import Hub from './screens/Hub';
 import NegCompound from './screens/NegCompound';
 import Quiz from './screens/Quiz';
 import TradeSim from './screens/TradeSim';
+import EntryHook from './screens/EntryHook';
 import MentorChat from './screens/MentorChat';
 import SurgeGame from './screens/SurgeGame';
 import CompoundRisk from './screens/CompoundRisk';
@@ -35,11 +36,11 @@ export default function App() {
     setScreen('order');
   }, []);
 
-  // 고위험 종목 클릭 -> 종목별 고정 케이스 (클릭당 체험 한 번)
+  // 고위험 종목 클릭 -> 종목별 고정 케이스 (클릭당 체험 한 번) -> 먼저 진입 훅 화면
   const enterMentor = useCallback((product: string, ct: CaseType) => {
     setWarnProduct(product);
     setCaseType(ct);
-    setScreen('mentor');
+    setScreen('hook');
   }, []);
 
   const openWarning = useCallback((product: string) => {
@@ -66,6 +67,7 @@ export default function App() {
         {screen === 'neg' && <NegCompound />}
         {screen === 'quiz' && <Quiz />}
         {screen === 'sim' && <TradeSim />}
+        {screen === 'hook' && <EntryHook />}
         {screen === 'mentor' && <MentorChat />}
         {screen === 'game2' && <SurgeGame />}
         {screen === 'game3' && <CompoundRisk />}

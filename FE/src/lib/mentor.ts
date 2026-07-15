@@ -15,6 +15,13 @@ export type CaseType = 'surge' | 'compound' | 'etf';
 /** 진행 순서 */
 export const CASE_ORDER: CaseType[] = ['surge', 'compound', 'etf'];
 
+/** 채팅 진입 직후, 질문 1이 로딩되기 전에 먼저 띄우는 훅 문구 */
+export const HOOK_LINES: Record<CaseType, string> = {
+  surge: '1분에 100만원을 벌 수 있다고?',
+  compound: '2배 ETF면 더 벌어야 하는 거 아닌가요?',
+  etf: '인버스니까 반대로만 가면 무조건 버는 거 아닌가요?',
+};
+
 export type QuestionAxis = 'what' | 'why' | 'when' | 'how' | 'where' | 'who';
 
 export interface Choice {
