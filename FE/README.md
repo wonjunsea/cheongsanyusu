@@ -16,7 +16,7 @@ npm install
 npm run dev        # 개발 서버: http://localhost:5173, /api/*는 ../BE로 프록시
 ```
 
-BE(`../BE`)도 같이 띄워야 멘토 채팅이 동작합니다. 자세한 내용은 루트 `CLAUDE.md` 참고.
+BE(`../BE`)도 같이 띄워야 멘토 채팅이 동작합니다. API 계약은 `BE/README.md` 참고.
 
 기타 명령어:
 
@@ -41,7 +41,7 @@ npm run preview    # 빌드 결과 미리보기
 - `src/lib/mentor.ts` — `fetchNextTurn()`이 `POST /api/mentor`를 호출
 - `src/data/mentorPrompt.ts` — 케이스별 멘토 시스템 프롬프트
 
-BE 실행 방법과 턴 기반 JSON 계약은 `BE/routes/mentor.js` 및 `CLAUDE.md` 참고.
+BE 실행 방법과 턴 기반 JSON 계약은 `BE/README.md` 참고.
 
 ## 폴더 구조
 
@@ -69,4 +69,3 @@ src/
 ## 참고
 
 - 실제 돈이 아닌 **교육용 모의 데이터**입니다. 특정 상품을 추천하지 않습니다.
-- 자세한 아키텍처/스키마는 `CLAUDE.md` 참고.

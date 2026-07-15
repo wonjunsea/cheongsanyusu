@@ -20,8 +20,21 @@ npm run dev            # http://localhost:8787
 
 ```
 POST /api/mentor
-Body: { system, caseType, user_id, answeredTurns }
-Response: { turn, inferred_state }
+Body: {
+  system: string,                 // FE의 buildMentorSystemPrompt(caseType)
+  caseType: "surge"|"compound"|"etf",
+  user_id: string,
+  answeredTurns: { turn: QuestionTurn, chosenChoiceId: string }[]  // 첫 호출은 []
+}
+Response: { turn: MentorTurn, inferred_state: InferredState }
 ```
 
-턴 구조와 스키마 자세한 설명은 루트 `CLAUDE.md` 참고.
+정확히 4턴(질문 1~3 + 최종 1)으로 진행되는 객관식 롤플레잉이다. 자유 텍스트 채팅이 아니다.
+
+- `MentorTurn`은 둘 중 하나:
+  - `{ turn_type: "question", question_axis, hint, prompt, choices }` — 객관식 선택지 2~4개
+  - `{ turn_type: "final", summary_of_user_state, final_explanation, final_actions }` — 요약/설명/행동 선택지
+- `answeredTurns.length`가 곧 턴 인덱스: 0~2는 질문 턴, 3부터는 최종 턴(`routes/mentor.js`의 `QUESTION_TURNS`)
+- `InferredState`: `{ mental_model, risk_belief, market_frame, confusion_point, confidence_level }` — 매 턴 LLM이 내부적으로 갱신, 사용자에게는 노출하지 않음
+- 질문 축은 5W1H(what/why/when/how/where/who) 중 케이스에 맞는 것만 사용
+- 매 요청마다 직전 턴에서 사용자가 고른 답변을 SQLite(`db.js`)에 `user_id` + `case_type` 기준으로 저장
